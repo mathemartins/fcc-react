@@ -99,6 +99,7 @@ export default function Body(props){
      * When looping through an array and want to interact with a single entity
      * pass the key in component and id in component and pass as props
      * then use id as argument where the function is been created and use to get the particular entity
+     * 
      * also map returns a new list of the modified version of original data
      */
 
@@ -108,24 +109,109 @@ export default function Body(props){
     const [formData, setFormData] = React.useState({
         firstName: "",
         lastName: "",
+        comments: "comments",
+        isFriendly: true,
+        employment: "",
+        favColor: ""
     })
 
     function handleChange(event){
         console.log(event.target.value, event.target.type, event.target.name)
+        const {name, value, type, checked} = event.target
         setFormData(function(previousFormData){
             return {
-                ...previousFormData, [event.target.name]: event.target.value
+                ...previousFormData, 
+                [name]: type === "checkbox" ? checked : value
             }
         })
     }
 
+    function handleSubmit(event){
+        event.preventDefault()
+        console.log(formData)
+        if (formData.password === formData.passwordConfirm){
+            console.log("Success!")
+        } else {
+            console.log("Passwords Do not Match")
+            return
+        }
+
+        if (formData.joinNewsletter){
+            console.log("Subscribed Successfully!")
+        }
+    }
+
+    /**
+     * React.useEffect() takes two parameters ( function and a dependency array)
+     * React.useEffect() only renders after the return UI has been done
+     */
+    React.useEffect(function(){
+        fetch("http://some-url.com/api/data/").then(function(response){
+            response.json()
+        }).then(function(data){
+            console.log(data)
+            setSomeState(data)
+        }).finally()
+    }, [someStateVariable])
+
+    React.useEffect(function(){
+        function watchWidth() {
+            setWindowWidth(window.innerWidth)
+        }
+
+        window.addEventListener("resize", watchWidth)
+        return function(){
+            window.removeEventListener("resize", watchWidth)
+        }
+    }, [])
+
+    /**
+     * The above example shows how to avoid memory leak when you have a dynanmic rendering on a component
+     * when the component mounts you handle normally, when component is removed from DOM (unmount)
+     * You make the useEffect returns a function that removes an event listener to avoid memory leak
+     */
     return (
         <>
             <section className="search-meme" style={styles}>
-                <form className="form-input">
+                <form className="form-input" onSubmit={handleSubmit}>
                     <div className="inputs">
-                        <input className="first-word" type="text" placeholder="First World" name="firstName" onChange="handleChange"/>
-                        <input className="second-word" type="text" placeholder="Second World" name="secondName" onChange="handleChange"/>
+                        <input 
+                        className="first-word" type="text" placeholder="First World" 
+                        name="firstName" onChange={handleChange} value={formData.firstName} />
+                        <input 
+                        className="second-word" type="text" placeholder="Second World" 
+                        name="secondName" onChange={handleChange} value={formData.lastName} />
+                        <textarea 
+                        className="bio" value={formData.comments} placeholder="Comments" 
+                        onChange={handleChange} name="comments" />
+
+                        <input 
+                        type="checkbox" id="isFriendly" checked={formData.isFriendly}
+                        onChange={handleChange}
+                        />
+                        <label htmlFor="isFriendly">Are you friendly</label>
+
+                        <fieldset>
+                            <legend>Current Employment Status</legend>
+                            <input 
+                            type="radio" id="unemployed" name="employment" value="employed"
+                            onChange={handleChange} checked={formData.employment == "employment"}
+                            />
+                            <label htmlFor="unemployed">Unemployed</label>
+                            <br/>
+                            <input 
+                            type="radio" id="part-time" name="part-time" value="part-time"
+                            onChange={handleChange} checked={formData.employment == "part-time"}
+                            />
+                            <label htmlFor="part-time">Part Time</label>
+                        </fieldset>
+
+                        <select id="favColor" value={formData.favColor} onChange={handleChange} name="favColor">
+                            <option value="">-- Choose --</option>
+                            <option value="red">Red</option>
+                            <option value="blue">Blue</option>
+                            <option value="green">Green</option>
+                        </select>
                     </div>
 
                     <button className="btn">Get a meme image</button>
